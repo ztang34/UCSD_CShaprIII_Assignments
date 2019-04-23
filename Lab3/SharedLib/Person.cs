@@ -40,7 +40,9 @@ namespace SharedLib
 
         public override string ToString()
         {
-            return $"{LastName,20}{FirstName,15}{DOB,10:MM-dd-YYYY}{Gender,5}";
+            return $"{LastName,-20}{FirstName,-15}{DOB,-10:MM-dd-yyyy}  {Gender,-10}";
         }
+
+        
     }
 }
