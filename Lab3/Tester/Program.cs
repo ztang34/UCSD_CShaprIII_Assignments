@@ -12,10 +12,27 @@ namespace Tester
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("Starting Reflection test...");
+            Console.WriteLine();
             ReflectionsTest();
+            Console.WriteLine(new string('=', 40));
+           
+            Console.WriteLine("Starting Person test...");
+            Console.WriteLine();
             PersonTest();
+            Console.WriteLine(new string('=', 40));
+            
+            Console.WriteLine("Starting MathStuff test...");
+            Console.WriteLine();
             MathStuffTest();
+            Console.WriteLine(new string('=', 40));
+           
+            Console.WriteLine("Starting Custom Attribute test...");
+            Console.WriteLine();
             CustomAttributeTest();
+            Console.WriteLine();
+
+            Console.WriteLine("Press <ENTER> to quit...");
             Console.ReadLine();
         }
 
