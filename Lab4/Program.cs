@@ -35,19 +35,41 @@ namespace Lab03
 			DateTime startTime = DateTime.Now;
 
 			// Create the producer threads
-			// TODO:
+			for (int i = 0; i<producerThreadCount; ++i)
+            {
+                Thread producer = new Thread(ProducerThread);
+                producer.Start(new Tuple<int, int, ulong>(i, producerThreadCount, highest));
+                producerThreads.Add(producer);
+            }
 
 			// Create the consumer threads
-			// TODO: 
+			for (int i =0; i<consumerThreadCount; ++i)
+            {
+                Thread consumer = new Thread(ConsumerThread);
+
+                //Create the List of ulongs that the consumer will place its results into
+                List<ulong> primes = new List<ulong>((int)approxNumPrimes / consumerThreadCount);
+                m_Primes.Add(i, primes);
+
+                consumer.Start(i);
+                consumerThreads.Add(consumer);
+            }
 
 			// Create the timer that will output the number of numbers left to process
 			m_Timer = new Timer(CountTimerCallback, null, 500, 500);
 
 			// Wait for producer threads...
-			// TODO:
+			foreach(Thread thread in producerThreads)
+            {
+                thread.Join();
+            }
+            m_ProducersComplete.Set();
 
 			// Wait for consumer threads...
-			// TODO:
+			foreach(Thread thread in consumerThreads)
+            {
+                thread.Join();
+            }
 			
 			
 			m_Timer.Dispose();
@@ -177,7 +199,21 @@ namespace Lab03
 		/// <param name="state">Contains the start, increment and upper bound for the numbers to add</param>
 		static void ProducerThread(object state)
 		{
-			// TODO:
+            Tuple<int, int, ulong> parameters = state as Tuple<int, int, ulong>;
+            if (parameters == null) return;
+            int start = parameters.Item1;
+            int skip = parameters.Item2;
+            ulong upper = parameters.Item3;
+
+            UpdateThreadStatus(start, true, '+');
+
+            for (ulong i = (ulong)start; i<= upper; i+=(ulong)skip)
+            {
+                m_Numbers.Enqueue(i);
+                Thread.Sleep(1);
+            }
+
+            UpdateThreadStatus(start, true, '-');
 		}
 
 		/// <summary>
@@ -186,7 +222,27 @@ namespace Lab03
 		/// <param name="state">Contains the id of the thread</param>
 		static void ConsumerThread(object state)
 		{
-			// TODO:
+            int id = (int)state;
+            UpdateThreadStatus(id, false, '+');
+
+            List<ulong> primes = m_Primes[id];
+
+            while(m_ProducersComplete.WaitOne(1) == false || m_Numbers.Count > 0)
+            {
+                ulong number;
+                if(m_Numbers.TryDequeue(out number))
+                {
+                    UpdateThreadStatus(id, false, 'X');
+                    if(MathStuff.IsPrime(number))
+                    {
+                        primes.Add(number);
+                    }
+                    UpdateThreadStatus(id, false, '+');
+
+                }
+            }
+            UpdateThreadStatus(id, false, '-');
+
 		}
 
 	}
