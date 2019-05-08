@@ -111,7 +111,31 @@ namespace Lab4
 		/// <param name="e"></param>
 		private void taskGoButton_Click(object sender, EventArgs e)
 		{
-			// TODO:
+            taskGoButton.Enabled = false;
+            taskCancelButton.Enabled = true;
+
+            m_TokenSource = new CancellationTokenSource();
+
+            var ui = TaskScheduler.FromCurrentSynchronizationContext();
+
+            Task calculatePiTask = Task.Factory.StartNew(CalculatePiTask, m_TokenSource.Token);
+
+            Task resultOK = calculatePiTask.ContinueWith((Task resultTask) =>
+            {
+                MessageBox.Show("Calculation finished", "Task Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                taskCancelButton.Enabled = false;
+                taskGoButton.Enabled = true;
+            },
+            CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion,ui);
+
+            Task resultCancel = calculatePiTask.ContinueWith((Task resultTask) =>
+            {
+                MessageBox.Show("Calculation stopped by user", "Task Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                taskCancelButton.Enabled = false;
+                taskGoButton.Enabled = true;
+            },
+            CancellationToken.None, TaskContinuationOptions.OnlyOnCanceled, ui);
+
 		}
 
 		private void taskCancelButton_Click(object sender, EventArgs e)
